@@ -20,11 +20,11 @@ int previous_b_Homing_E = 0, previous_b_SingleStep_E = 0; // Use for detecting s
 long pos_top = 0, pos_bottom = 0, current_position = 0, target_position = 0;
 bool is_calibrated = false;
 bool SingleStepDirection = LOW;
-long ramp_steps = 50;
+long ramp_steps = 150;
 double speed = 0.0;
 const int CALIBRATION_DELAY_US = 3000; // ~20 RPM
 const int MIN_DELAY_US = 1600;          // fast speed
-const int MAX_DELAY_US = 2100;         // slow speed for start (not used)
+const int MAX_DELAY_US = 3000;         // slow speed for start (not used)
 const bool closing_direction = HIGH;
 const bool opening_direction = LOW;
 
@@ -118,8 +118,8 @@ void loop()
         }
         else
         {
-            Serial.print("Current Position: ");
-            Serial.println(current_position);
+            //Serial.print("Current Position: ");
+            //Serial.println(current_position);
             digitalWrite(TRIG_PIN, LOW);    // Trig for Kistler
         }
     }
@@ -132,7 +132,6 @@ void restart()
     Serial.println("Restarting...");
     delay(1000);
     setup();
-    //asm volatile("rjmp 0x00");
 }
 void runCalibration()
 {

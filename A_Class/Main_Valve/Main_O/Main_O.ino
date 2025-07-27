@@ -13,7 +13,7 @@
 const char* ssid = "Testing Facility";
 const char* password = "testingfacility";
 const char* server_ip = "192.168.1.228";
-const uint16_t server_port = 4850;
+const uint16_t server_port = 4851;
 WiFiClient client;
 int b_Homing_O = 0, w_Main_OV = 0, b_SingleStep_O = 0;
 int previous_b_Homing_O = 0, previous_b_SingleStep_O = 0; // Use for detecting state changes
@@ -23,8 +23,8 @@ bool SingleStepDirection = LOW;
 long ramp_steps = 150;
 double speed = 0.0;
 const int CALIBRATION_DELAY_US = 3000; // ~20 RPM
-const int MIN_DELAY_US = 1000;          // fast speed
-const int MAX_DELAY_US = 2300;         // slow speed for start (not used)
+const int MIN_DELAY_US = 1600;          // fast speed
+const int MAX_DELAY_US = 3000;         // slow speed for start (not used)
 const bool closing_direction = HIGH;
 const bool opening_direction = LOW;
 
@@ -132,7 +132,6 @@ void restart()
     Serial.println("Restarting...");
     delay(1000);
     setup();
-    //asm volatile("rjmp 0x00");
 }
 void runCalibration()
 {

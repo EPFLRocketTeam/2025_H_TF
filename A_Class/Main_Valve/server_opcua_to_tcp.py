@@ -44,8 +44,10 @@ node_w_main_O        = ua.NodeId(base64.b64decode("AQAAAKbhKnGK9zM6o+Y1NI3mYGeQ7
 
 # === TCP server setup ===
 HOST = "0.0.0.0"
-PORT = 4850
-sock = None
+PORT_ETH = 4850
+PORT_N2O = 4851
+sock_eth = None
+sock_n2o = None
 ethanol_conn = None
 n2o_conn = None
 homing_e = 0
@@ -55,17 +57,30 @@ main_o   = 0
 single_e = 0
 single_o = 0
 def connect_tcp():
-    global ethanol_conn, sock
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    global ethanol_conn, sock_eth, n2o_conn, sock_n2o
+    sock_eth = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock_eth.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    sock_n2o = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock_n2o.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     try:
-        sock.bind((HOST, PORT))
-        sock.listen(1)
-        print(f"Valve system server running on port {PORT}")
+        # Bind and listen for Ethanol valve
+        sock_eth.bind((HOST, PORT_ETH))
+        sock_eth.listen(1)
+        print(f"Valve system server running on port {PORT_ETH}")
         print("Waiting for Ethanol valve to connect...")
-        ethanol_conn, addr = sock.accept()
+        ethanol_conn, addr = sock_eth.accept()
         print(f"Ethanol valve connected from {addr}")
+
+        # Bind and listen for N2O valve
+        sock_n2o.bind((HOST, PORT_N2O))
+        sock_n2o.listen(1)
+        print(f"Valve system server running on port {PORT_N2O}")
+        print("Waiting for N2O valve to connect...")
+        n2o_conn, addr = sock_n2o.accept()
+        print(f"N2O valve connected from {addr}")
+
         return True
+    
     except Exception as e:
         print(f"Failed to connect TCP: {e}")
         try:
@@ -73,11 +88,12 @@ def connect_tcp():
         except:
             pass
         try:
-            sock.close()
+            sock_eth.close()
         except:
             pass
         time.sleep(1)
         return False
+
 def read_opcua():
     global homing_e, homing_o, main_e, main_o, single_e, single_o
     try:
@@ -93,8 +109,9 @@ def read_opcua():
         homing_e = homing_o = single_e = single_o = 0
         main_e = main_o = 0
         return False
+
 def send_tcp():
-    global ethanol_conn, sock, homing_e, homing_o, main_e, main_o, single_e, single_o
+    global ethanol_conn, sock_eth, homing_e, homing_o, main_e, main_o, single_e, single_o
     data_e = json.dumps({   "b_Homing_E": homing_e,
                             "w_Main_EV": main_e,
                             "b_SingleStep_E": single_e
@@ -105,21 +122,25 @@ def send_tcp():
                         }) + "\n"
     try:
         ethanol_conn.sendall(data_e.encode())
+        n2o_conn.sendall(data_o.encode())
         return True
-        # n2o_conn.sendall(data_o.encode())
+        
     except Exception as e:
         print(f"TCP send error: {e}")
         return False
+    
 def print_separation():
     print("\n"*3,"-"*40)
+
 def loop():
     # Read OPCUA
-        if(not read_opcua()):
-            connect_opcua()
-        # Send TCP
-        if(not send_tcp()):
-            connect_tcp()
-        print(f"homing_e: {homing_e}")
+    if(not read_opcua()):
+        connect_opcua()
+    # Send TCP
+    if(not send_tcp()):
+        connect_tcp()
+    print(f"homing_e: {homing_e}")
+
 def main():
     try:
         # Connection OPCUA
@@ -139,7 +160,7 @@ def main():
         except:
             pass
         try:
-            sock.close()
+            sock_eth.close()
         except:
             pass
         try:
