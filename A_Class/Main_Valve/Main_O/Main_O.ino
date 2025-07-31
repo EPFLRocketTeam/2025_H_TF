@@ -22,8 +22,8 @@ bool is_calibrated = false;
 bool SingleStepDirection = LOW;
 long ramp_steps = 150;
 double speed = 0.0;
-const int CALIBRATION_DELAY_US = 3000; // ~20 RPM
-const int MIN_DELAY_US = 1600;          // fast speed
+const int CALIBRATION_DELAY_US = 3500; // ~20 RPM
+const int MIN_DELAY_US = 600;          // fast speed
 const int MAX_DELAY_US = 3000;         // slow speed for start (not used)
 const bool closing_direction = HIGH;
 const bool opening_direction = LOW;
@@ -79,7 +79,7 @@ void loop()
     // Check WiFi connection
     if (!client.connected())
     {
-        Serial.println("Reconnecting...");
+        Serial.println("Reconnecting TCP in loop...");
         client.connect(server_ip, server_port);
         delay(500);
         while (WiFi.status() != WL_CONNECTED)
